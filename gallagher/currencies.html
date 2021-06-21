@@ -1,4 +1,4 @@
-<? // array parameter in: [ X=a,b,c | Y=a(1/2),b(3/4),c(5/6) ], JSON object out, e.g.
+<? // array parameter in - [ X=a,b,c | Y=a(1/2),b(3/4),c(5/6) ] - JSON object out:
   // ?page=currencies&snapshot=YOY,2021-04-30,2020-04-30&swap=USD(1.2291/1.3943),BTC(70985.94/12083.24)
  // &markets=Lake+Louise(787600/646400),Hardisty(333600/288400),Inuvik(484200/420300)&milliseconds=6000,1300
 let OBJECTIFY = function(INPUT,TYPE,KEYS) {
@@ -11,17 +11,17 @@ let OBJECTIFY = function(INPUT,TYPE,KEYS) {
       OUTPUT[ITEM] = {} ; for (i in KEYS) { OUTPUT[ITEM][KEYS[i]] = CLEAN(CHILDREN[i]) } } return OUTPUT }
   switch(TYPE) { case 'SPLIT' : return SPLIT(KEYS) ; case 'NEST' : return NEST(KEYS) } 
 }
-let SNAPSHOT = (data.snapshot) ? OBJECTIFY(data.snapshot, 'SPLIT',['label','new','old']) :
+let SNAPSHOT = (data.snapshot) ? OBJECTIFY(data.snapshot, 'SPLIT', ['label','new','old']) :
               { "label" : "YOY" , "new" : "2021-04-30" , "old" : "2020-04-30" }
-let SWAP = (data.swap) ? OBJECTIFY(data.swap, 'NEST',['new','old']) : 
+let SWAP = (data.swap) ? OBJECTIFY(data.swap, 'NEST', ['new','old']) : 
               { "USD" : { "new" : 1.2291 , "old" : 1.3943 } , "BTC" : { "new" : 70985.94 , "old" : 12083.24 } }
-let MARKETS = (data.markets) ? OBJECTIFY(data.markets, 'NEST',['new','old']) : 
+let MARKETS = (data.markets) ? OBJECTIFY(data.markets, 'NEST', ['new','old']) : 
               { "Toronto" : { "new" : 1005500 , "old" : 858300 } , "Montreal" : { "new" : 483200 , "old" : 383400 } , 
                 "Vancouver" : { "new" : 1141900 , "old" : 1020400 } , "Ottawa" : { "new" : 636000 , "old" : 478500 } ,
                 "Calgary" : { "new" : 447800 , "old" : 410800 } , "Edmonton" : { "new" : 336500 , "old" : 313700 } , 
                 "Winnipeg" : { "new" : 311300 , "old" : 271900 } , "Regina" : { "new" : 261600 , "old" : 241800 } ,   
                 "Saskatoon" : { "new" : 321200 , "old" : 290000 } }
-let MILLISECONDS = (data.milliseconds) ? OBJECTIFY(data.milliseconds, 'SPLIT',['markets','bumper']) :
+let MILLISECONDS = (data.milliseconds) ? OBJECTIFY(data.milliseconds, 'SPLIT', ['markets','bumper']) :
               { "markets" : 6000 , "bumper" : 1300 }
 ?><html><head><title>Gallagher 0.9.5: Currencies</title></head><body>
   <script>
