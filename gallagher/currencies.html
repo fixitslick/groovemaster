@@ -1,0 +1,290 @@
+<? // array parameter in: [ X=a,b,c | Y=a(1/2),b(3/4),c(5/6) ], JSON object out, e.g.
+  // ?page=currencies&snapshot=YOY,2021-04-30,2020-04-30&swap=USD(1.2291/1.3943),BTC(70985.94/12083.24)
+ // &markets=Lake+Louise(787600/646400),Hardisty(333600/288400),Inuvik(484200/420300)&milliseconds=6000,1300
+let OBJECTIFY = function(INPUT,TYPE,KEYS) {
+  let VALUES = INPUT.split(',') // divide parameter by commas into array
+  let CLEAN = function(VALUE) { return (isNaN(VALUE)) ? VALUE : Number(VALUE) } // unquote numbers
+  let SPLIT = function(KEYS) { let OUTPUT = {} ; for (i in VALUES) { OUTPUT[KEYS[i]] = CLEAN(VALUES[i]) } ; return OUTPUT }
+  let NEST = function(KEYS) { let OUTPUT = {}
+    for (i in VALUES) { // ITEM outside parentheses, CHILDREN inside, assign keys to child values
+      let ITEM = VALUES[i].match(/^\w+/)[0], CHILDREN = VALUES[i].match(/\([^)]+\)/)[0].replace(/[()]/g,'').split('/')
+      OUTPUT[ITEM] = {} ; for (i in KEYS) { OUTPUT[ITEM][KEYS[i]] = CLEAN(CHILDREN[i]) } } return OUTPUT }
+  switch(TYPE) { case 'SPLIT' : return SPLIT(KEYS) ; case 'NEST' : return NEST(KEYS) } 
+}
+let SNAPSHOT = (data.snapshot) ? OBJECTIFY(data.snapshot, 'SPLIT',['label','new','old']) :
+              { "label" : "YOY" , "new" : "2021-04-30" , "old" : "2020-04-30" }
+let SWAP = (data.swap) ? OBJECTIFY(data.swap, 'NEST',['new','old']) : 
+              { "USD" : { "new" : 1.2291 , "old" : 1.3943 } , "BTC" : { "new" : 70985.94 , "old" : 12083.24 } }
+let MARKETS = (data.markets) ? OBJECTIFY(data.markets, 'NEST',['new','old']) : 
+              { "Toronto" : { "new" : 1005500 , "old" : 858300 } , "Montreal" : { "new" : 483200 , "old" : 383400 } , 
+                "Vancouver" : { "new" : 1141900 , "old" : 1020400 } , "Ottawa" : { "new" : 636000 , "old" : 478500 } ,
+                "Calgary" : { "new" : 447800 , "old" : 410800 } , "Edmonton" : { "new" : 336500 , "old" : 313700 } , 
+                "Winnipeg" : { "new" : 311300 , "old" : 271900 } , "Regina" : { "new" : 261600 , "old" : 241800 } ,   
+                "Saskatoon" : { "new" : 321200 , "old" : 290000 } }
+let MILLISECONDS = (data.milliseconds) ? OBJECTIFY(data.milliseconds, 'SPLIT',['markets','bumper']) :
+              { "markets" : 6000 , "bumper" : 1300 }
+?><html><head><title>Gallagher 0.9.5: Currencies</title></head><body>
+  <script>
+    let SNAPSHOT = JSON.parse(<?=JSON.stringify(SNAPSHOT)?>)
+    let SWAP = JSON.parse(<?=JSON.stringify(SWAP)?>)
+    let MARKETS = JSON.parse(<?=JSON.stringify(MARKETS)?>)
+    let MILLISECONDS = JSON.parse(<?=JSON.stringify(MILLISECONDS)?>)
+    let NEXT = ''
+  </script>
+  <style>
+    body::-webkit-scrollbar { display: none }
+    body { font: 100% segoe ui light; color: #fffb; margin: 0 }
+    a { text-decoration: none; color: #ccc; padding: 0 .16em .16em .32em; margin: 0 0 0 .6em } 
+    a:hover { text-shadow: 0 0 .1em #fffa } a:focus { outline: none; background: radial-gradient(#2225 33%, #0000 100%) }
+    main { background: #222a; cursor: none }
+    main, layer { top: 0; left: 0; width: 100%; height: 100%; display: block; position: fixed }
+  </style>
+  <main class="SIGN">
+    <layer 
+    class="VISUALS"><!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <style>
+        .VISUALS header { transform: translate(0,-.2em); opacity: 0; font-size: 480%; margin: 7.5% 0 0 7.5% }
+        .VISUALS.reveal header { transform: none; opacity: 1; transition: transform .72s, opacity .72s ease-out }
+        .DATA { opacity: 0; transform: translate(0,.5em); font-size: 220%;
+          line-height: 1.4em; padding: 2.6em 0 0 7.6%; transition: opacity .8s, transform .8s }
+        .DATA.reveal { opacity: 1; transform: none; transition: opacity 1.2s, transform 1s }
+        .DATA svg { fill: #eee8;
+          float: left; width: 1.66em; margin: -.1em .5em 0 -1.2em; transform: rotate(270deg); transition: transform .8s }
+        .DATA.reveal svg { transform: rotate(0deg); transition: transform .9s ease-out }
+        .MARKET { font-size: 200%; text-transform: uppercase; letter-spacing: .08em; margin: 0 0 1em 0; display: block }
+      </style>
+      <header> Median detached home: <output class="SNAPSHOT"></output> </header>
+      <section class="DATA">
+        <output class="MARKET"></output>
+        <figure class="CAD"> <svg viewBox="0 0 30 30"> <use href="#LOON"></use> </svg> </figure>
+        <output class="CAD"></output> (<output class="CAD CHANGE"></output>)
+        <figure class="USD"> <svg viewBox="0 0 30 30"> <use href="#USDCOIN"></use> </svg> </figure>
+        <output class="USD"></output> (<output class="USD CHANGE"></output>)
+        <figure class="BTC"> <svg viewBox="0 0 30 30"> <use href="#SATOSHI"></use> </svg> </figure>
+        <output class="BTC"></output> (<output class="BTC CHANGE"></output>)
+      </section>
+    </layer><layer
+    class="CONTROL"><!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <style>
+        .CONTROL { text-align: right; left: 0; width: 88%; top: 88%; font-size: 140%; position: fixed; z-index: 9;
+          opacity: 0; transition: opacity .6s; cursor: none }
+        .CONTROL.reveal { opacity: 1; transition: opacity .4s } main.cursor { cursor: auto }
+      </style>
+      <section class="COMMANDS">
+        <a class="CONFIGURE" href="gallagher://configure">Change parameters &gt;</a>
+        <a class="DOWNLOAD" href="gallagher://download">Download HTML5 &gt;</a>      
+      </section>
+      <script class="HOVER">
+        let CONTROL = document.querySelector('.CONTROL') ; let SIGN = document.querySelector('.SIGN')
+        let FADE = setTimeout( () => { void(null) } ) // keep resetting while pointer moves (as 3s unreveal delay)
+        document.addEventListener('mousemove', () => {
+          CONTROL.classList.add('reveal') ; SIGN.classList.add('cursor') ; clearTimeout(FADE)
+          FADE = setTimeout( () => { CONTROL.classList.remove('reveal') ; SIGN.classList.remove('cursor') } , 3000 ) } )
+      </script>
+      <script class="CONFIGURE"> <!-- populating listener: script.FORMIFY (after main) -->
+        document.querySelector('a.CONFIGURE').addEventListener('click', (EVENT) => { EVENT.preventDefault()
+          document.querySelector('layer.INPUT').classList.add('reveal')
+          document.querySelector('layer.CONTROL').style.display = 'none' } )
+      </script>
+      <script class="DOWNLOAD">
+        document.querySelector('a.DOWNLOAD').addEventListener('click', function() { // assume offline reuse, declutter
+          let COPY = new DocumentFragment() ; COPY.documentElement = document.documentElement.cloneNode(true)
+          let DOWNLOAD = COPY.documentElement // clear interactive/dynamically set elements:
+          let REMOVALS = DOWNLOAD.querySelectorAll('head script, link, .CONTROL, .INPUT, #FLOWCOVER > rect')
+          for (ALL of REMOVALS) { ALL.parentElement.removeChild(ALL) }
+          let UNREVEALS = DOWNLOAD.querySelectorAll('.reveal,.cursor') // and dynamic styles caught in action
+          for (ALL of UNREVEALS) { ALL.classList.remove('reveal','cursor') }
+          DOWNLOAD.querySelector('script').textContent = // re-prettify JSON objects, add comments (stripped by caja up top)
+            ' // customize: peart.subtractor.eth.link' +
+            '\n    let SNAPSHOT = ' + JSON.stringify(SNAPSHOT) +
+            '\n    let SWAP = ' + JSON.stringify(SWAP) + 
+            '\n    let MARKETS = ' + JSON.stringify(MARKETS) +
+            '\n    let MILLISECONDS = ' + JSON.stringify(MILLISECONDS) + 
+            '\n    let NEXT = \'\' \/\/ e.g. (local) \'groovemaster-gallagher-sponsor-subtractor.html\' (empty = loop)\n  '
+          this.href = 'data:text/html;utf8,' + encodeURIComponent(DOWNLOAD.outerHTML)
+          this.download = 'groovemaster-gallagher-currencies-' + new Date(Date.now()).toISOString().substr(0,10) + '.html' } )
+      </script>
+    </layer><layer
+    class="INPUT"><!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -  -->
+      <style>
+        .INPUT { 
+          transform: scaleY(0%) translateY(50%); opacity: 0; transition: transform .36s, opacity .36s; background: #333e }
+        .INPUT.reveal { transform: none; opacity: 1; transition: transform .6s, opacity .6s } .INPUT a { font-size: 128% }
+        .INPUT section { margin: 2em 0; text-align: right }
+        form { display: block; padding: 2% 8%; max-height: 82%; overflow-y: auto;
+          -webkit-mask-image: linear-gradient(transparent 4%, white 8%, white 90%, transparent 94%) }
+        form::-webkit-scrollbar { display: none }
+        label { font-size: 120%; display: block } 
+        input { background: #303030c0; border: 0; border-bottom: solid #ccc3 1px; border-radius: .1em; text-align: right;
+          font: 100% segoe ui light; color: #eee; padding: .2em .6em; width: 7em; margin: 0 0 0 .7em }
+        input:focus { background: #2225; outline: none }
+        .INPUT .COMMANDS { position: fixed; top: 84%; left: 0; width: 92% }
+      </style>
+      <form>
+        <section class="snapshot">
+          <label>Timeframe: <input/> <input/> <input/> </label>
+        </section>
+        <section class="swap">
+          <label>Exchange:  <input/> <input/> <input/> </label>
+          <label><a class="ADD" href="gallagher://add">+</a> <input/> <input/> <input/> </label>
+        </section>
+        <section class="markets">
+          <label>Prices: <input/> <input/> <input/> </label>
+          <label><a class="ADD" href="gallagher://add">+</a> <input/> <input/> <input/> </label>
+        </section>
+        <section class="milliseconds">
+          <label>Delays (ms): <input/> <input/> </label>
+        </section>
+      </form>
+      <section class="COMMANDS">
+        <a class="CANCEL" href="gallagher://cancel">Dismiss &gt;</a>
+        <a class="RENDER" href="gallagher://render">Animate &gt;</a>      
+      </section>
+      <script class="CANCEL">
+        document.querySelector('a.CANCEL').addEventListener('click', (EVENT) => { EVENT.preventDefault()
+          document.querySelector('layer.INPUT').classList.remove('reveal')
+          document.querySelector('layer.CONTROL').style.display = 'block' } )
+      </script>
+    </layer>
+    <layer
+    class="BACKGROUND"><!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+      <style>
+        .BACKGROUND svg:last-of-type { height: 100%; width: 100%; top:0; left: 0; position: fixed }
+        .BACKGROUND svg:first-of-type { opacity: 0; margin: 0 -30% 0; fill: #56565eaa;
+          transform: rotateY(-90deg); position: fixed; left: 100%; height: 104% }
+        .BACKGROUND.reveal svg:first-of-type { opacity: 1; margin: 0 -50% 0; 
+          transform: none; transition: opacity .8s, margin .8s, transform 1.1s ease } .BACKGROUND { z-index: -9 }
+      </style>
+      <svg viewBox="0 0 30 30"> <use href="#RIEL"></use> </svg> 
+      <svg viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice"> <use href="#FLOWCOVER"></use> </svg> 
+    </layer>
+  </main>
+  <script class="ANIMATE">
+    let DISPLAY = document.querySelector('main.SIGN layer.VISUALS section.DATA')
+    function FORMAT(VALUE,TYPE) {
+      switch(TYPE) {
+        case '₿' : return VALUE.toFixed(4)
+        case '$' : return Math.round(VALUE).toLocaleString('en-CA')
+        case '%' : return (VALUE > 0 ? '+' : '') + (VALUE * 100).toFixed(1) + '% ' + SNAPSHOT.label
+        case 'month' : return VALUE.match(/Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec/) + VALUE.match(/ \d\d\d\d /) } }
+    function POPULATE(MARKET) {
+      let NODES = {}, MEDIAN = MARKETS[MARKET] // price data under each market above
+      NODES['output.MARKET'] = MARKET
+      NODES['output.CAD'] = 'CAD ' + FORMAT( MEDIAN.new , '$' )
+      NODES['output.CAD.CHANGE'] = FORMAT( ( MEDIAN.new / MEDIAN.old ) - 1 , '%' )
+      NODES['output.USD'] = 'USD ' + FORMAT( MEDIAN.new / SWAP.USD.new , '$' )
+      NODES['output.USD.CHANGE'] = FORMAT( ( ( MEDIAN.new / SWAP.USD.new ) / ( MEDIAN.old / SWAP.USD.old ) ) - 1 , '%' )
+      NODES['output.BTC'] = 'BTC ' + FORMAT( MEDIAN.new / SWAP.BTC.new , '₿' )
+      NODES['output.BTC.CHANGE'] = FORMAT( ( ( MEDIAN.new / SWAP.BTC.new ) / ( MEDIAN.old / SWAP.BTC.old ) ) - 1 , '%' )
+      for ([SELECTOR,VALUE] of Object.entries(NODES)) { document.querySelector(SELECTOR).innerText = VALUE } }
+    function SCHEDULE(MARKET) {
+      let COUNT = Object.keys(MARKETS).indexOf(MARKET)
+      let START = COUNT * (MILLISECONDS.markets + MILLISECONDS.bumper)
+      let END = START + MILLISECONDS.markets
+      setTimeout( POPULATE, START, MARKET )
+      setTimeout( () => { DISPLAY.classList.add('reveal') } , START )
+      setTimeout( () => { DISPLAY.classList.remove('reveal') } , END ) }
+    document.addEventListener('DOMContentLoaded', () => { // - - - - - - - - - - - - INITIALIZE - - - - - - - - - - - - -
+      let DATE = new Date(SNAPSHOT.new).toString() ; document.querySelector('output.SNAPSHOT').innerText = FORMAT(DATE,'month')
+      setTimeout( () => { // delay to force consistent behaviour
+        let REVEALS = document.querySelectorAll('.VISUALS, .BACKGROUND')
+        for (ALL of REVEALS) { ALL.classList.add('reveal') } } , 100 )
+      let LENGTH = Object.keys(MARKETS).length * (MILLISECONDS.markets + MILLISECONDS.bumper)
+      let CYCLE = () => { for (EACH in MARKETS) { SCHEDULE(EACH) } } // objects: x IN y, nodelists: x OF y (most errors)
+      if (NEXT) { CYCLE() ; setTimeout( () => { window.top.location.href = NEXT } , LENGTH ) } // cycle once and forward
+      else { CYCLE() ; setInterval(CYCLE, LENGTH) } } ) // cycle once and loop forever
+      // for Dan & The Professor ♔ CC0 2021 @fIXITSLICK @iSLANDSLICK & bOttLeNeCk uNiCoRn rAnCh ♔ pROVIDE eNERGY
+  </script>
+  <script class="LOOPIFY">
+    let PARAMETERS = [SNAPSHOT,SWAP,MARKETS,MILLISECONDS] // loop everything (not just MARKETS) for .FORMIFY and .REQUEST
+  </script>
+  <script class="FORMIFY">
+    let POPULATED = false
+    document.querySelector('a.CONFIGURE').addEventListener('click', (EVENT) => { EVENT.preventDefault()
+      if (POPULATED) return false
+      let SECTIONS = document.querySelectorAll('layer.INPUT > form > section')
+      let REPLICATE = (ROW) => { let CLONE = ROW.cloneNode(true) ; let MINUS = CLONE.firstElementChild // change + to -
+        MINUS.classList.remove('ADD') ; MINUS.innerText = ' - ' ; MINUS.href = 'gallagher://subtract'
+        MINUS.onclick = (EVENT) => { EVENT.preventDefault()
+          let THIS = EVENT.currentTarget ; THIS.parentElement.parentElement.removeChild(THIS.parentElement) }
+        let DUPES = CLONE.querySelectorAll('input') ; for (ALL of DUPES) { ALL.value = '' } 
+        return ROW.parentElement.appendChild(CLONE) } // return DOM pointer to set the fields
+      let PLUSES = document.querySelectorAll('a.ADD')
+      for (ALL of PLUSES) { ALL.onclick = (EVENT) => { EVENT.preventDefault()
+        REPLICATE(EVENT.currentTarget.parentElement) ; EVENT.currentTarget.blur() } }
+      for ( i = 0 ; i < PARAMETERS.length ; i++ ) { // no simple index-match, so set i, make SECTIONS[i] = PARAMETERS[i]
+        let ROWS = SECTIONS[i].querySelectorAll('label'), FIELDS = {}
+        if (ROWS.length == 1) { // - - - - - - - - - - - - - - - - - - - - - - - 1d array = populate one row, any length
+          FIELDS = ROWS[0].querySelectorAll('input')
+          for ( v = 0 ; v < FIELDS.length ; v++ ) { FIELDS[v].value = Object.values(PARAMETERS[i])[v] } }
+        else { // - - - - - - - - - - - - - - - - 2d array = populate multiple rows ( ITEM | CHILDREN[0] | CHILDREN[1] )
+          for ( k = 0 ; k < Object.keys(PARAMETERS[i]).length ; k++ ) { 
+            if (ROWS[k]) { FIELDS = ROWS[k].querySelectorAll('input') }
+            else { FIELDS = REPLICATE(ROWS[1]).querySelectorAll('input') }
+            FIELDS[0].value = Object.entries(PARAMETERS[i])[k][0]
+            FIELDS[1].value = Object.entries(PARAMETERS[i])[k][1]['new']
+            FIELDS[2].value = Object.entries(PARAMETERS[i])[k][1]['old'] } } }
+      POPULATED = true } )
+  </script>
+  <script class="REQUEST">
+    document.querySelector('a.RENDER').addEventListener('click', (EVENT) => { EVENT.preventDefault()
+      let REQUEST = 'https://groovemaster.web.app/gallagher?page=currencies'
+      let KEYS = ['snapshot','swap','markets','milliseconds'], VALUES = [], ROWS = [], FIELDS = []
+      for ( i = 0 ; i < 4 ; i++ ) {
+        REQUEST += `&${KEYS[i]}=` ; VALUES = [] // reset
+        SELECTOR = `layer.INPUT section.${KEYS[i]} label`
+        if ( i == 1 || i == 2 ) { // swap, markets: multi-row 2d array
+          ROWS = document.querySelectorAll(SELECTOR)
+          for ( k = 0 ; k < ROWS.length ; k++ ) { FIELDS = ROWS[k].querySelectorAll('input')
+            VALUES.push(`${FIELDS[0].value}(${FIELDS[1].value}/${FIELDS[2].value})`) } }
+        else { FIELDS = document.querySelectorAll(`${SELECTOR} input`) ; for (EACH of FIELDS) { VALUES.push(EACH.value) } }
+        REQUEST += VALUES.join(',') }
+      window.top.location.href = REQUEST } )
+  </script>
+  <script class="ICON"> if (window.top == window.self) { // running locally (not in GCP frame)
+    document.addEventListener('DOMContentLoaded', () => {
+      let COLOUR = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'white' : 'black'
+      let SHAPE = document.querySelector('#GROOVEMASTER').outerHTML
+      let SVG = `<svg xmlns="http://www.w3.org/2000/svg" fill="${COLOUR}" viewBox="4 4 100 100">${SHAPE}</svg>`
+      let ICON = document.head.appendChild(document.createElement('link'))
+      ICON.rel = 'icon' ; ICON.type = 'image/svg+xml' ; ICON.href = `data:image/svg+xml;utf8,${SVG}` } ) }
+  </script>
+  <svg><defs>
+    <g id="FLOWCOVER" width="1920" height="1080">
+      <defs> <!-- no attribute manipulation for stops, hardcode and assign whole gradient instead -->
+        <linearGradient id="FADE0" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#2959bb00"/> <stop offset="20%" stop-color="#2959bb22"/>
+          <stop offset="80%" stop-color="#2959bb22"/> <stop offset="100%" stop-color="#2959bb00"/>
+        </linearGradient>
+        <linearGradient id="FADE1" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#4979cc00"/> <stop offset="20%" stop-color="#4979cc22"/>
+          <stop offset="80%" stop-color="#4979cc22"/> <stop offset="100%" stop-color="#4979cc00"/>
+        </linearGradient>
+        <rect id="FLOW" width="1920" height="40"> <animate repeatCount="indefinite" attributeName="x" to="-1920"/> </rect>
+      </defs>
+      <script>
+        let FLOW = document.getElementById('FLOW')
+        for ( i = 0 ; i < 27 ; i++ ) {
+          let CLONE = FLOW.cloneNode(true) ; CLONE.id += i ; let ANIMATE = CLONE.firstElementChild
+          let DURATION = (1 + Math.random()) + 's' // vary 1 to 2 seconds
+          let ORIGIN = (Math.random() * 1920) + 1920 // vary offscreen right
+          CLONE.setAttribute('fill', `url(#FADE${(i % 2)})`) ; CLONE.setAttribute('y', i * 40)
+          ANIMATE.setAttribute('dur', DURATION) ; ANIMATE.setAttribute('from', ORIGIN)
+          FLOW.parentElement.parentElement.appendChild(CLONE) } // populate #FLOWCOVER 27 times, 27 x 40 = 1080
+      </script>
+    </g>
+    <path id="RIEL" d="
+      m 15.961704 21.01878 c -0.285022 0.26815 -0.502043 0.61834 -0.638844 0.98498 -0.179601 0.48134 -0.164661 1.0297 -0.216891 1.53017 0.774365 0.0454 1.226348 0.1324 1.869752 0.43579 0.006 -0.0941 0.0776 -1.09191 0.223302 -1.28774 0.121491 -0.26713 1.090757 -0.49848 1.361079 -0.54812 0.596764 -0.10959 1.016907 -0.20179 1.696182 -0.26128 0 0 -0.0192 -0.13528 -0.101141 -0.17944 -0.156821 -0.0846 -0.833016 -0.18565 -1.327189 -0.30954 -0.548494 -0.2377 -1.081718 -0.59825 -1.624841 -0.7027 -0.471493 -0.0942 -0.911656 0.0331 -1.241409 0.33788 z m -1.667791 2.83047 c 0.796715 0 1.717432 0.0282 2.366636 0.33443 0.514214 0.24252 1.211248 0.71957 1.125438 1.2816 -0.518734 1.57118 -4.119058 1.36693 -6.089212 1.16144 -0.532593 -0.0575 -2.1283443 -0.42525 -2.0404437 -0.95367 0.1792912 -1.07778 3.6703147 -1.8238 4.6375817 -1.8238 z M 20.973328 0 c -3.232022 0.98618 -6.396173 3.59972 -6.793096 7.24639 -0.214421 1.59992 0.355953 3.14628 1.052877 4.54003 0.644615 1.77419 -0.560133 3.79427 -2.301045 4.22272 -1.880253 0.62003 -4.493931 -0.0126 -5.1705256 -2.12596 -0.2276515 -1.20014 0.1234509 -2.4558 0.6686346 -3.51724 -3.529054 2.66221 -6.1526718 7.03492 -5.7853993 11.66267 0.3069121 3.33062 3.0290306 5.7782 5.8596398 7.00354 1.1918881 0.49907 1.9711935 0.78593 3.7594755 0.95187 l 0.776176 0.002 -3.0766716 -1.94616 -1.4985802 -3.29455 0.4953834 -3.66153 2.3743364 -2.7317 3.536384 -1.07042 3.514434 1.03028 2.366066 2.73894 0.556234 3.65271 -1.508501 3.28998 -3.05896 2.00347 0.858905 0.003 c 3.068261 -1.00564 6.147142 -1.9954 7.988215 -3.9298 1.605171 -1.78 2.094114 -4.35017 1.647751 -6.69268 -0.615254 -4.16548 -3.373313 -7.63771 -6.659105 -9.974 C 19.476818 8.4864 17.914348 7.71313 17.828487 6.06187 17.739287 3.63678 19.130746 1.40143 20.973328 4e-5 Z"/>
+    <path id="LOON" d="
+      M 14.88669 8.25e-5 C 6.64672 0.0622825 -2.399935e-4 6.7597425 0 14.999942 c 0 8.284235 6.71563 15.00006 14.99987 15.00006 8.28423 0 15.000059 -6.715825 15.000059 -15.00006 C 29.99993 6.7157125 23.2841 7.25e-5 14.99987 8.25e-5 c -0.0378 -1.1e-4 -0.0754 -1.1e-4 -0.11318 0 z m 0.0839 3.5878 c 0.01 -2e-5 0.0195 -2e-5 0.0292 0 6.30257 3e-4 11.41174 5.10949 11.41206 11.4120595 -3e-4 6.302573 -5.10949 11.411743 -11.41206 11.412067 C 8.69721 26.411705 3.58804 21.302515 3.58772 14.999942 3.58802 8.7087925 8.67942 3.6043425 14.97055 3.5878825 Z m -0.13135 1.99221 c -1.72735 0.49085 -3.47282 0.94185 -5.13618 1.62798 -1.20806 1.28059 -2.31916 2.64812 -3.41023 4.0284695 -0.27111 1.77518 -0.58596 3.55021 -0.65281 5.34832 0.66302 1.63089 1.44528 3.20978 2.24761 4.775703 1.5021 0.984026 2.986 2.007879 4.59378 2.815686 1.75892 0.0745 3.51992 0.01866 5.27761 -0.06064 1.51913 -0.957575 3.06688 -1.882242 4.46954 -3.009257 0.79834 -1.569062 1.47939 -3.194052 2.13739 -4.825872 -0.23997 -1.77965 -0.43811 -3.57164 -0.88055 -5.31573 -1.0956 -1.3780495 -2.29088 -2.6726395 -3.50188 -3.9490695 -1.69628 -0.54151 -3.41166 -1.02445 -5.14428 -1.43559 z m 2.90279 5.2716795 c 0.14564 -0.004 0.29581 0.009 0.44858 0.0391 0.7039 0.135369 1.39511 0.60271 2.10598 0.91078 0.64047 0.16056 1.51679 0.29156 1.72003 0.40116 0.10621 0.0572 0.13115 0.23249 0.13115 0.23249 -0.88037 0.0771 -1.425 0.19672 -2.19842 0.33875 -0.35035 0.0643 -1.60661 0.36407 -1.76408 0.71029 -0.18889 0.25382 -0.28137 1.54713 -0.28937 1.66907 -0.83388 -0.39322 -1.41958 -0.50602 -2.4232 -0.56492 0.0677 -0.64864 0.0483 -1.35927 0.28107 -1.98313 0.1773 -0.47518 0.45847 -0.92901 0.85685 -1.30029 0.29879 -0.27845 0.6945 -0.44101 1.13141 -0.45331 z m -3.32173 4.14541 c 1.03257 0 2.22573 0.0367 3.06713 0.43356 0.66644 0.31433 1.56993 0.93253 1.4587 1.66097 -0.67229 2.036361 -5.33862 1.771631 -7.89202 1.50531 -0.69026 -0.0746 -2.75836 -0.55102 -2.64443 -1.23589 0.23237 -1.39689 4.75699 -2.36395 6.01062 -2.36395 z"/>
+    <path id="USDCOIN" d="
+      M 14.886719 0 A 15 15 0 0 0 0 15 A 15 15 0 0 0 15 30 A 15 15 0 0 0 30 15 A 15 15 0 0 0 15 0 A 15 15 0 0 0 14.886719 0 z M 11.757812 4.3984375 A 0.443 0.443 0 0 1 12.1875 4.8847656 L 12.1875 5.7597656 A 0.676 0.676 0 0 1 11.783203 6.3496094 A 9.375 9.375 0 0 0 11.783203 23.962891 A 0.676 0.676 0 0 1 12.1875 24.552734 L 12.1875 25.427734 A 0.443 0.443 0 0 1 11.5625 25.875 A 11.25 11.25 0 0 1 11.5625 4.4375 A 0.443 0.443 0 0 1 11.757812 4.3984375 z M 18.21875 4.3984375 A 0.444 0.444 0 0 1 18.4375 4.4375 A 11.25 11.25 0 0 1 18.4375 25.875 A 0.444 0.444 0 0 1 17.8125 25.427734 L 17.8125 24.552734 A 0.625 0.625 0 0 1 18.214844 23.962891 A 9.376 9.376 0 0 0 18.214844 6.3496094 A 0.674 0.674 0 0 1 17.8125 5.7597656 L 17.8125 4.8847656 A 0.444 0.444 0 0 1 18.21875 4.3984375 z M 14.53125 7.65625 L 15.46875 7.65625 A 0.469 0.469 0 0 1 15.9375 8.125 L 15.9375 9.6308594 C 17.4475 9.8998594 18.408703 10.7595 18.720703 12.1875 A 0.439 0.439 0 0 1 18.28125 12.697266 L 17.296875 12.697266 A 0.478 0.478 0 0 1 16.84375 12.349609 C 16.57875 11.445609 15.930594 11.056641 14.808594 11.056641 C 13.577594 11.056641 12.933594 11.609094 12.933594 12.496094 C 12.933594 13.384094 13.300125 13.830469 15.203125 14.105469 C 17.778125 14.458469 19.109375 15.197766 19.109375 17.384766 C 19.109375 19.062766 17.8745 20.400031 15.9375 20.707031 L 15.9375 22.1875 A 0.469 0.469 0 0 1 15.46875 22.65625 L 14.53125 22.65625 A 0.469 0.469 0 0 1 14.0625 22.1875 L 14.0625 20.705078 C 12.0185 20.430078 11.016141 19.286609 10.744141 17.724609 A 0.436 0.436 0 0 1 11.177734 17.214844 L 12.246094 17.214844 A 0.475 0.475 0 0 1 12.705078 17.597656 C 12.890078 18.525656 13.444125 19.240234 15.078125 19.240234 C 16.290125 19.240234 17.150391 18.562734 17.150391 17.552734 C 17.150391 16.543734 16.643234 16.159141 14.865234 15.869141 C 12.252234 15.516141 11.003906 14.719016 11.003906 12.666016 C 11.003906 11.078016 12.1885 9.841125 14.0625 9.578125 L 14.0625 8.125 A 0.469 0.469 0 0 1 14.53125 7.65625 z"/>
+    <path id="SATOSHI" d="
+      M 15.000001 3.6816405 A 11.318145 11.318148 0 0 0 3.6816305 15.000001 11.318145 11.318148 0 0 0 15.000001 26.318361 11.318145 11.318148 0 0 0 26.318356 15.000001 11.318145 11.318148 0 0 0 15.000001 3.6816405 Z m 0 1.81836 A 9.4999062 9.499909 0 0 1 24.5 15.000001 a 9.4999062 9.499909 0 0 1 -9.499999 9.5 9.4999062 9.499909 0 0 1 -9.5000005 -9.5 9.4999062 9.499909 0 0 1 9.5000005 -9.5000005 z m -2.15788 4.01964 c -0.38166 -0.11466 -1.16508 -0.2681 -1.16508 -0.2681 -0.19835 -0.0456 -0.40302 0.0252 -0.47473 0.21566 l -0.2586 0.6914005 c -0.0714 0.19092 0.0175 0.43023 0.21638 0.475 0 0 0.75731 0.14366 1.12604 0.25348 0.66065 0.19676 1.30915 0.43965 1.93726 0.72368 0.35717 0.16152 0.73865 0.38597 1.03661 0.55541 0.15124 0.086 0.40365 -0.0246 0.47545 -0.21538 l 0.25862 -0.69139 c 0.0715 -0.19122 -0.0257 -0.40417 -0.21713 -0.47528 0 0 -0.67894 -0.39371 -1.03588 -0.55514 -0.61566 -0.2784405 -1.2518 -0.5149405 -1.89894 -0.7093405 z m -1.63508 3.5493305 c -0.38166 -0.11465 -1.16509 -0.26809 -1.16509 -0.26809 -0.1983505 -0.0456 -0.4030205 0.0252 -0.4747205 0.21566 l -0.25861 0.69139 c -0.0714 0.19093 0.0175 0.43024 0.2164 0.475 0 0 0.7572905 0.14367 1.1260105 0.25349 0.66067 0.19676 1.30917 0.43964 1.93727 0.72367 0.35719 0.16153 0.73866 0.38597 1.03662 0.55541 0.15124 0.086 0.40363 -0.0246 0.47546 -0.21537 l 0.25859 -0.6914 c 0.0715 -0.19121 -0.0257 -0.40417 -0.21713 -0.47528 0 0 -0.67893 -0.3937 -1.03587 -0.55514 -0.61567 -0.27843 -1.25181 -0.51493 -1.89893 -0.70934 z m 9.471924 -1.73526 c 0.0736 -0.80759 -1.3738 -0.83272 -1.555504 0.0218 -0.751118 5.16563 -3.33927 7.40162 -6.46018 8.7633 -1.87185 0.8167 -0.11846 1.73716 0.3812 1.55221 4.309097 -1.59505 7.191333 -5.47364 7.634484 -10.33732 z M 30 15.000001 a 14.999995 14.999999 0 0 1 -14.999999 15 A 14.999995 14.999999 0 0 1 5.0000092e-7 15.000001 14.999995 14.999999 0 0 1 15.000001 5.0000102e-7 14.999995 14.999999 0 0 1 30 15.000001"/>
+    <path id="GROOVEMASTER" d="
+      M 24.257812 8 C 15.250783 8 8 15.250783 8 24.257812 V 75.742188 C 8 84.749216 15.250783 92 24.257812 92 H 75.742188 C 84.749216 92 92 84.749216 92 75.742188 V 24.257812 C 92 15.250783 84.749216 8 75.742188 8 Z m 45.761834 4.035042 C 59.875974 40.20323 114.1031 58.0232 66.943359 89.960938 c 3.405393 -2.26697 5.642579 -6.137534 5.642579 -10.552735 0 -7.021005 -5.652823 -12.673828 -12.673829 -12.673828 h -5.496093 v -6.947266 c 1.292186 -1.049047 2.042681 -2.624658 2.042968 -4.289062 -2.08e-4 -3.051503 -2.473887 -5.525182 -5.52539 -5.525391 -3.051503 2.08e-4 -5.525183 2.473888 -5.525391 5.525391 3.97e-4 1.663395 0.750092 3.238111 2.041016 4.287109 v 6.949219 h -5.785157 c -7.021001 0 -12.673828 5.652823 -12.673828 12.673828 0 4.512781 2.342021 8.449394 5.875 10.693359 C 25.658734 86.923173 14.827777 76.401068 14.511588 67.066063 13.964054 50.900948 26.826442 34.68639 35.941406 27.712891 32.553469 52.869454 50.933594 49.972656 53.607651 39.482259 55.650788 31.466977 58.228249 16.394116 70.019646 12.035042 Z M 42.263672 72.849609 c 3.621866 7e-5 6.557649 2.936728 6.55664 6.558594 -7e-5 3.621104 -2.935536 6.556571 -6.55664 6.556641 -3.621104 -7e-5 -6.556571 -2.935537 -6.556641 -6.556641 -10e-4 -3.621867 2.934774 -6.558525 6.556641 -6.558594 z m 17.048828 0 c 3.621867 6.9e-5 6.55765 2.936727 6.556641 6.558594 -7e-5 3.621104 -2.935537 6.556571 -6.556641 6.556641 -3.621867 0.001 -6.558525 -2.934774 -6.558594 -6.556641 -10e-4 -3.62263 2.935964 -6.559604 6.558594 -6.558594 z"/>
+  </defs></svg>
+  <style class="CANADA">
+    body { background: #224 fixed center/cover url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 187 171"><path fill="rgb(66,66,99)" d="m 11.235217 103.2854 0.713317 -0.47914 1.676906 -4.971369 -2.334346 -0.532126 z m -1.7642549 9.92532 0.8329109 4.11143 7.16094 6.88495 -5.551937 -9.88914 z m 145.6577179 8.53345 3.69653 0.34061 1.88044 -2.24363 -4.59381 0.0979 -3.45798 0.62311 z m -59.226381 -76.79923 -4.854775 2.064203 -6.171698 1.098465 -4.869788 -7.090083 6.164879 1.50955 3.65352 1.587628 4.829636 -3.06541 z m -34.284156 -9.496346 5.894161 2.505933 -3.528031 3.778262 13.163195 -3.672097 -4.857546 -8.524434 -3.912034 3.600395 -4.572829 -0.74261 z m 18.843236 -14.988246 10.83515 -9.913867 3.373529 2.694456 0.691117 22.365657 -8.92223 3.059821 0.500703 -8.236824 -3.200086 2.715608 -8.107417 -15.004473 z m -7.603212 44.612464 -3.945915 -16.277525 -6.946721 2.641493 -11.125432 -8.172583 -3.130014 8.035475 4.966806 2.824749 2.981302 -0.779287 0.778462 4.869328 -1.44698 2.000865 5.575686 5.342083 z m 0.315458 -18.596222 4.737768 4.560605 2.183517 -5.216997 -2.001832 -4.309348 -3.696305 0.627297 z m 15.359682 4.362772 -1.294567 9.692187 5.81697 3.46373 8.95183 -3.910024 11.49263 6.297567 -4.21407 10.426273 14.82485 -0.333489 L 120.13584 59.18141 97.200139 48.917658 Z m -77.478892 19.924489 -0.02976 8.316208 4.752787 -0.916818 1.060382 14.993071 -5.107374 16.709298 6.966908 12.24968 61.435967 12.27263 12.131405 2.34224 7.676339 -2.259 6.113051 6.89674 7.96599 0.94487 2.41163 5.19967 -6.662 12.51432 35.77274 -24.66879 6.5775 -8.22173 -0.17615 11.33065 6.11879 -6.74577 0.14055 7.48014 3.7089 -1.21634 5.60201 -15.31655 -2.7279 -1.84582 -3.25495 1.08688 -6.59801 5.20275 -7.72251 -6.32411 -7.4689 5.10409 5.39435 -12.87964 9.90233 0.36822 2.10634 -9.38206 2.90305 13.39245 17.61205 -8.5722 -5.94648 -2.77153 -9.22076 1.72202 -5.34786 -3.77074 0.17374 -4.426249 -18.05674 -4.433772 -14.14568 -12.208818 0.75391 9.558116 -8.1796 -6.511909 -13.07929 -1.437267 7.93804 17.197079 -0.70405 10.38107 2.1989 11.05002 -3.1323 0.60102 -4.97648 -9.12283 -11.065643 -3.09402 -9.325334 -4.39209 -4.181408 -11.440525 4.706139 -9.550776 6.78128 -7.485105 2.983435 -11.972662 -7.770646 0.524531 -7.446639 -8.549185 -3.474608 0.611572 2.271506 11.731378 -12.046291 -1.620763 -5.857968 -0.01608 -4.392611 -2.272048 -3.931599 -4.024171 -3.156855 -2.633613 -5.141356 -6.929649 -10.241973 0.122055 -3.968153 -6.41278 z"/></svg>') }
+  </style>
+</body></html>
