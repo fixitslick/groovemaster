@@ -8,7 +8,7 @@ let OBJECTIFY = function(INPUT,TYPE,KEYS) {
   let NEST = function(KEYS) { let OUTPUT = {}
     for (i in VALUES) { // ITEM outside parentheses, CHILDREN inside, assign keys to child values
       let ITEM = VALUES[i].match(/^[^\(]+/)[0], CHILDREN = VALUES[i].match(/\([^)]+\)/)[0].replace(/[()]/g,'').split('/')
-      OUTPUT[ITEM] = {} ; for (i in KEYS) { OUTPUT[ITEM][KEYS[i]] = CLEAN(CHILDREN[i]) } } return OUTPUT }
+      OUTPUT[ITEM] = {} ; for (k in KEYS) { OUTPUT[ITEM][KEYS[k]] = CLEAN(CHILDREN[k]) } } return OUTPUT }
   switch(TYPE) { case 'SPLIT' : return SPLIT(KEYS) ; case 'NEST' : return NEST(KEYS) } 
 }
 let SNAPSHOT = (data.snapshot) ? OBJECTIFY(data.snapshot, 'SPLIT', ['label','new','old']) :
