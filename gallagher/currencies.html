@@ -12,15 +12,15 @@ let OBJECTIFY = function(INPUT,TYPE,KEYS) {
   switch(TYPE) { case 'SPLIT' : return SPLIT(KEYS) ; case 'NEST' : return NEST(KEYS) } 
 }
 let SNAPSHOT = (data.snapshot) ? OBJECTIFY(data.snapshot, 'SPLIT', ['label','new','old']) :
-              { "label" : "YOY" , "new" : "2021-05-31" , "old" : "2020-05-31" }
+              { "label" : "YOY" , "new" : "2021-07-31" , "old" : "2020-07-31" }
 let SWAP = (data.swap) ? OBJECTIFY(data.swap, 'NEST', ['new','old']) : 
-              { "USD" : { "new" : 1.2065 , "old" : 1.3767 } , "BTC" : { "new" : 45025.10 , "old" : 13167.39 } }
+              { "USD" : { "new" : 1.24 , "old" : 1.34 } , "BTC" : { "new" : 51739.26 , "old" : 14953.06 } }
 let MARKETS = (data.markets) ? OBJECTIFY(data.markets, 'NEST', ['new','old']) : 
-              { "Toronto" : { "new" : 1045800 , "old" : 880200 } , "Montreal" : { "new" : 496600 , "old" : 386200 } , 
-                "Vancouver" : { "new" : 1172800 , "old" : 1028400 } , "Ottawa" : { "new" : 653600 , "old" : 486300 } ,
-                "Calgary" : { "new" : 441600 , "old" : 396600 } , "Edmonton" : { "new" : 343300 , "old" : 316400 } , 
-                "Winnipeg" : { "new" : 319900 , "old" : 277700 } , "Regina" : { "new" : 266000 , "old" : 246100 } ,   
-                "Saskatoon" : { "new" : 330300 , "old" : 298700 } }
+              { "Toronto" : { "new" : 1054300 , "old" : 893000 } , "Montreal" : { "new" : 496000 , "old" : 402000 } , 
+                "Vancouver" : { "new" : 1175500 , "old" : 1039100 } , "Ottawa" : { "new" : 660400 , "old" : 535800 } ,
+                "Calgary" : { "new" : 447600 , "old" : 403200 } , "Edmonton" : { "new" : 345200 , "old" : 322000 } , 
+                "Winnipeg" : { "new" : 318500 , "old" : 284300 } , "Regina" : { "new" : 268000 , "old" : 252900 } ,   
+                "Saskatoon" : { "new" : 331400 , "old" : 305100 } }
 let MILLISECONDS = (data.milliseconds) ? OBJECTIFY(data.milliseconds, 'SPLIT', ['markets','bumper']) :
               { "markets" : 6400 , "bumper" : 1600 }
 ?><html><head><title>Gallagher 0.9.5: Currencies</title></head><body>
