@@ -12,15 +12,15 @@ let OBJECTIFY = function(INPUT,TYPE,KEYS) {
   switch(TYPE) { case 'SPLIT' : return SPLIT(KEYS) ; case 'NEST' : return NEST(KEYS) } 
 }
 let SNAPSHOT = (data.snapshot) ? OBJECTIFY(data.snapshot, 'SPLIT', ['label','new','old']) :
-              { "label" : "YOY" , "new" : "2021-09-30" , "old" : "2020-09-30" }
+              { "label" : "YOY" , "new" : "2021-10-31" , "old" : "2020-10-31" }
 let SWAP = (data.swap) ? OBJECTIFY(data.swap, 'NEST', ['new','old']) : 
               { "USD" : { "new" : 1.27 , "old" : 1.34 } , "BTC" : { "new" : 54532.83 , "old" : 14392.96 } }
 let MARKETS = (data.markets) ? OBJECTIFY(data.markets, 'NEST', ['new','old']) : 
-              { "Toronto" : { "new" : 1082400 , "old" : 908900 } , "Montreal" : { "new" : 499700 , "old" : 413600 } , 
-                "Vancouver" : { "new" : 1186100 , "old" : 1042100 } , "Ottawa" : { "new" : 639900 , "old" : 550300 } ,
-                "Calgary" : { "new" : 443700 , "old" : 406500 } , "Edmonton" : { "new" : 341000 , "old" : 324500 } , 
-                "Winnipeg" : { "new" : 318400 , "old" : 285500 } , "Regina" : { "new" : 267700 , "old" : 258200 } ,   
-                "Saskatoon" : { "new" : 326100 , "old" : 309000 } }
+              { "Toronto" : { "new" : 1128600 , "old" : 908600 } , "Montreal" : { "new" : 506800 , "old" : 418800 } , 
+                "Vancouver" : { "new" : 1199400 , "old" : 1045900 } , "Ottawa" : { "new" : 645800 , "old" : 552600 } ,
+                "Calgary" : { "new" : 445600 , "old" : 407100 } , "Edmonton" : { "new" : 341700 , "old" : 323800 } , 
+                "Winnipeg" : { "new" : 318200 , "old" : 288900 } , "Regina" : { "new" : 262800 , "old" : 255800 } ,   
+                "Saskatoon" : { "new" : 326100 , "old" : 308700 } }
 let MILLISECONDS = (data.milliseconds) ? OBJECTIFY(data.milliseconds, 'SPLIT', ['markets','bumper']) :
               { "markets" : 6400 , "bumper" : 1600 }
 ?><html><head><title>Gallagher 0.9.5: Currencies</title></head><body>
