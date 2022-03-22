@@ -12,15 +12,15 @@ let OBJECTIFY = function(INPUT,TYPE,KEYS) {
   switch(TYPE) { case 'SPLIT' : return SPLIT(KEYS) ; case 'NEST' : return NEST(KEYS) } 
 }
 let SNAPSHOT = (data.snapshot) ? OBJECTIFY(data.snapshot, 'SPLIT', ['label','new','old']) :
-              { "label" : "YOY" , "new" : "2022-01-31" , "old" : "2021-01-31" }
+              { "label" : "YOY" , "new" : "2022-02-28" , "old" : "2021-02-28" }
 let SWAP = (data.swap) ? OBJECTIFY(data.swap, 'NEST', ['new','old']) : 
-              { "USD" : { "new" : 1.27 , "old" : 1.28 } , "BTC" : { "new" : 47776.09 , "old" : 43106.70 } }
+              { "USD" : { "new" : 1.28 , "old" : 1.27 } , "BTC" : { "new" : 49478.68 , "old" : 56940.96 } }
 let MARKETS = (data.markets) ? OBJECTIFY(data.markets, 'NEST', ['new','old']) : 
-              { "Toronto" : { "new" : 1259900 , "old" : 945200 } , "Montreal" : { "new" : 530100 , "old" : 434600 } , 
-                "Vancouver" : { "new" : 1255200 , "old" : 1059200 } , "Ottawa" : { "new" : 689700 , "old" : 594800 } ,
-                "Calgary" : { "new" : 458800 , "old" : 411800 } , "Edmonton" : { "new" : 339600 , "old" : 322900 } , 
-                "Winnipeg" : { "new" : 331300 , "old" : 293200 } , "Regina" : { "new" : 263300 , "old" : 245100 } ,   
-                "Saskatoon" : { "new" : 328600 , "old" : 310300 } }
+              { "Toronto" : { "new" : 1340000 , "old" : 986200 } , "Montreal" : { "new" : 545900 , "old" : 453700 } , 
+                "Vancouver" : { "new" : 1313400 , "old" : 1087700 } , "Ottawa" : { "new" : 730300 , "old" : 630000 } ,
+                "Calgary" : { "new" : 484000 , "old" : 418300 } , "Edmonton" : { "new" : 348900 , "old" : 326400 } , 
+                "Winnipeg" : { "new" : 342400 , "old" : 301600 } , "Regina" : { "new" : 261600 , "old" : 249800 } ,   
+                "Saskatoon" : { "new" : 330600 , "old" : 316600 } }
 let MILLISECONDS = (data.milliseconds) ? OBJECTIFY(data.milliseconds, 'SPLIT', ['markets','bumper']) :
               { "markets" : 6400 , "bumper" : 1600 }
 ?><html>
